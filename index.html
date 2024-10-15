@@ -21,9 +21,14 @@
             background-color: #e0e0e0;
             border-radius: 5px;
             min-height: 40px;
+            width: 300px;
+            text-align: center;
         }
         input[type="file"] {
             margin-top: 20px;
+        }
+        #reader {
+            display: none; /* Hide the scanner element */
         }
     </style>
 </head>
@@ -32,19 +37,18 @@
     <input type="file" id="fileInput" accept="image/*">
     <p>Or paste an image into the browser window.</p>
     <div id="result">Upload or paste a QR code image to see the result here.</div>
-
+    <div id="reader"></div> <!-- Hidden div used for the Html5Qrcode library -->
+    
     <script src="./js/html5-qrcode.min.js"></script>
     <script>
+        // Create an instance of Html5Qrcode using the hidden div element
+        const html5QrCode = new Html5Qrcode("reader");
+
         // Handle image file input
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageDataUrl = e.target.result;
-                    scanQRCode(imageDataUrl);
-                };
-                reader.readAsDataURL(file);
+                scanQRCode(file);
             }
         });
 
@@ -54,21 +58,15 @@
             for (const item of items) {
                 if (item.type.startsWith('image/')) {
                     const file = item.getAsFile();
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const imageDataUrl = e.target.result;
-                        scanQRCode(imageDataUrl);
-                    };
-                    reader.readAsDataURL(file);
+                    scanQRCode(file);
                     break;
                 }
             }
         });
 
-        // Function to scan QR code from the image
-        function scanQRCode(imageDataUrl) {
-            const html5QrCode = new Html5Qrcode(); // No need for an element with id=reader
-            html5QrCode.scanFile(imageDataUrl, true)
+        // Function to scan QR code from the image file
+        function scanQRCode(file) {
+            html5QrCode.scanFile(file, true)
                 .then(decodedText => {
                     document.getElementById('result').textContent = `Scanned result: ${decodedText}`;
                 })
