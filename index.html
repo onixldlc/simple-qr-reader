@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner (Image Upload or Clipboard Paste)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            min-height: 40px;
+        }
+        input[type="file"] {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>QR Code Scanner</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <p>Or paste an image into the browser window.</p>
+    <div id="result">Upload or paste a QR code image to see the result here.</div>
+
+    <script src="./js/html5-qrcode.min.js"></script>
+    <script>
+        const qrCodeReader = new Html5QrcodeScanner('reader', { fps: 10 });
+        
+        // Handle image file input
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageDataUrl = e.target.result;
+                    scanQRCode(imageDataUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle clipboard image paste
+        window.addEventListener('paste', (event) => {
+            const items = event.clipboardData.items;
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageDataUrl = e.target.result;
+                        scanQRCode(imageDataUrl);
+                    };
+                    reader.readAsDataURL(file);
+                    break;
+                }
+            }
+        });
+
+        // Function to scan QR code from the image
+        function scanQRCode(imageDataUrl) {
+            Html5Qrcode.getCameras().then(cameras => {
+                const html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.scanFile(imageDataUrl, true)
+                    .then(decodedText => {
+                        document.getElementById('result').textContent = `Scanned result: ${decodedText}`;
+                    })
+                    .catch(err => {
+                        document.getElementById('result').textContent = "Unable to decode the QR code.";
+                        console.error(`Error decoding QR code: ${err}`);
+                    });
+            }).catch(err => {
+                console.error(`Unable to access camera: ${err}`);
+            });
+        }
+    </script>
+</body>
+</html>
