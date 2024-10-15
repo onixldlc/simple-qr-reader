@@ -33,10 +33,8 @@
     <p>Or paste an image into the browser window.</p>
     <div id="result">Upload or paste a QR code image to see the result here.</div>
 
-    <script src="./js/html5-qrcode.min.js"></script>
+    <script src="html5-qrcode.min.js"></script>
     <script>
-        const qrCodeReader = new Html5QrcodeScanner('reader', { fps: 10 });
-        
         // Handle image file input
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -69,19 +67,15 @@
 
         // Function to scan QR code from the image
         function scanQRCode(imageDataUrl) {
-            Html5Qrcode.getCameras().then(cameras => {
-                const html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.scanFile(imageDataUrl, true)
-                    .then(decodedText => {
-                        document.getElementById('result').textContent = `Scanned result: ${decodedText}`;
-                    })
-                    .catch(err => {
-                        document.getElementById('result').textContent = "Unable to decode the QR code.";
-                        console.error(`Error decoding QR code: ${err}`);
-                    });
-            }).catch(err => {
-                console.error(`Unable to access camera: ${err}`);
-            });
+            const html5QrCode = new Html5Qrcode(); // No need for an element with id=reader
+            html5QrCode.scanFile(imageDataUrl, true)
+                .then(decodedText => {
+                    document.getElementById('result').textContent = `Scanned result: ${decodedText}`;
+                })
+                .catch(err => {
+                    document.getElementById('result').textContent = "Unable to decode the QR code.";
+                    console.error(`Error decoding QR code: ${err}`);
+                });
         }
     </script>
 </body>
